@@ -29,6 +29,7 @@ XYChartWidget::XYChartWidget(QWidget *parent)
     , m_maxYAxes(4)
     , m_groupingThreshold(0.3)
     , m_axisSpacing(60)
+    , m_darkModeEnabled(false)
 {
     setMinimumSize(400, 300);
     setBackgroundRole(QPalette::Base);
@@ -274,6 +275,17 @@ bool XYChartWidget::isCrosshairVisible() const
     return m_crosshairVisible;
 }
 
+void XYChartWidget::setDarkModeEnabled(bool enabled)
+{
+    m_darkModeEnabled = enabled;
+    update();
+}
+
+bool XYChartWidget::isDarkModeEnabled() const
+{
+    return m_darkModeEnabled;
+}
+
 void XYChartWidget::setMultiAxisEnabled(bool enabled)
 {
     m_multiAxisEnabled = enabled;
@@ -392,16 +404,18 @@ void XYChartWidget::setAxisAutoScale(int axisId, bool enabled)
 void XYChartWidget::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
-    
+
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
-    
-    // Vẽ nền
-    painter.fillRect(rect(), Qt::white);
-    
-    // Vẽ tiêu đề
+
+    // Draw background based on dark mode
+    QColor bgColor = m_darkModeEnabled ? QColor(30, 30, 30) : Qt::white;
+    QColor textColor = m_darkModeEnabled ? Qt::white : Qt::black;
+    painter.fillRect(rect(), bgColor);
+
+    // Draw title
     if (!m_title.isEmpty()) {
-        painter.setPen(Qt::black);
+        painter.setPen(textColor);
         QFont titleFont = painter.font();
         titleFont.setPointSize(12);
         titleFont.setBold(true);
@@ -594,18 +608,20 @@ QPointF XYChartWidget::mapToData(const QPointF &widgetPoint, int axisId) const
 
 void XYChartWidget::drawGrid(QPainter &painter)
 {
-    painter.setPen(QPen(QColor(220, 220, 220), 1));
-    
+    // Grid color based on dark mode
+    QColor gridColor = m_darkModeEnabled ? QColor(60, 60, 60) : QColor(220, 220, 220);
+    painter.setPen(QPen(gridColor, 1));
+
     int plotWidth = width() - m_leftMargin - m_rightMargin;
     int plotHeight = height() - m_topMargin - m_bottomMargin;
-    
-    // Lưới dọc
+
+    // Vertical grid lines
     for (int i = 0; i <= 10; ++i) {
         int x = m_leftMargin + plotWidth * i / 10;
         painter.drawLine(x, m_topMargin, x, height() - m_bottomMargin);
     }
-    
-    // Lưới ngang
+
+    // Horizontal grid lines
     for (int i = 0; i <= 10; ++i) {
         int y = m_topMargin + plotHeight * i / 10;
         painter.drawLine(m_leftMargin, y, width() - m_rightMargin, y);
@@ -694,10 +710,16 @@ void XYChartWidget::drawCrosshairTextBox(QPainter &painter, QPoint pos, const QS
     if (boxX + boxWidth > plotRight) boxX = pos.x() - boxWidth - 10;
     if (boxY < plotTop) boxY = pos.y() + 10;
 
-    painter.fillRect(boxX, boxY, boxWidth, totalHeight, QColor(255, 255, 200, 220));
-    painter.setPen(Qt::black);
+    // Tooltip colors based on dark mode
+    QColor bgColor = m_darkModeEnabled ? QColor(50, 50, 50, 220) : QColor(255, 255, 200, 220);
+    QColor textColor = m_darkModeEnabled ? Qt::white : Qt::black;
+    QColor borderColor = m_darkModeEnabled ? QColor(100, 100, 100) : Qt::black;
+
+    painter.fillRect(boxX, boxY, boxWidth, totalHeight, bgColor);
+    painter.setPen(borderColor);
     painter.drawRect(boxX, boxY, boxWidth, totalHeight);
 
+    painter.setPen(textColor);
     for (int i = 0; i < lines.size(); ++i) {
         painter.drawText(boxX + 4, boxY + 2 + i * lineHeight + fm.ascent(), lines[i]);
     }
@@ -705,7 +727,11 @@ void XYChartWidget::drawCrosshairTextBox(QPainter &painter, QPoint pos, const QS
 
 void XYChartWidget::drawAxes(QPainter &painter)
 {
-    painter.setPen(QPen(Qt::black, 2));
+    // Axis color based on dark mode
+    QColor axisColor = m_darkModeEnabled ? Qt::white : Qt::black;
+    QColor textColor = m_darkModeEnabled ? Qt::white : Qt::black;
+
+    painter.setPen(QPen(axisColor, 2));
 
     // Draw X-axis
     painter.drawLine(m_leftMargin, height() - m_bottomMargin,
@@ -724,7 +750,7 @@ void XYChartWidget::drawAxes(QPainter &painter)
     }
 
     if (m_showAxisLabels) {
-        painter.setPen(Qt::black);
+        painter.setPen(textColor);
         QFont labelFont = painter.font();
         labelFont.setPointSize(8);
         painter.setFont(labelFont);
@@ -795,30 +821,35 @@ void XYChartWidget::drawLegend(QPainter &painter)
     int legendX = width() - m_rightMargin - 150;
     int legendY = m_topMargin + 10;
     int lineHeight = 20;
-    
-    painter.setPen(Qt::black);
-    painter.setBrush(QColor(255, 255, 255, 200));
-    
+
+    // Legend colors based on dark mode
+    QColor bgColor = m_darkModeEnabled ? QColor(50, 50, 50, 200) : QColor(255, 255, 255, 200);
+    QColor textColor = m_darkModeEnabled ? Qt::white : Qt::black;
+    QColor borderColor = m_darkModeEnabled ? QColor(100, 100, 100) : Qt::black;
+
+    painter.setPen(borderColor);
+    painter.setBrush(bgColor);
+
     int visibleCount = 0;
     for (const auto &series : m_series) {
         if (series.visible) visibleCount++;
     }
-    
+
     if (visibleCount == 0) return;
-    
+
     painter.drawRect(legendX - 5, legendY - 5, 145, visibleCount * lineHeight + 5);
-    
+
     int i = 0;
     for (const auto &series : m_series) {
         if (!series.visible) continue;
-        
-        // Vẽ đường màu
+
+        // Draw colored line
         painter.setPen(series.pen);
         painter.drawLine(legendX, legendY + i * lineHeight + 10,
                         legendX + 30, legendY + i * lineHeight + 10);
-        
-        // Vẽ tên
-        painter.setPen(Qt::black);
+
+        // Draw name
+        painter.setPen(textColor);
         painter.drawText(legendX + 35, legendY + i * lineHeight,
                         100, lineHeight, Qt::AlignVCenter, series.name);
         i++;
@@ -856,11 +887,10 @@ void XYChartWidget::drawCrosshair(QPainter &painter)
     // Build list of text lines for display
     QStringList lines;
 
-    // Convert X to data coordinate (same for all)
-    int plotWidth = plotRight - plotLeft;
-    double xRange = m_xMax - m_xMin;
-    if (xRange < 1e-10) xRange = 1.0;
-    double xData = m_xMin + (m_crosshairPos.x() - plotLeft) / plotWidth * xRange;
+    // Convert widget coordinates to data coordinates using mapToData
+    // (use axis 0 for X since X is same for all axes, but we need a valid axisId)
+    QPointF dataPoint = mapToData(QPointF(m_crosshairPos.x(), m_crosshairPos.y()), 0);
+    double xData = dataPoint.x();
     lines.append(QString("X: %1").arg(xData, 0, 'f', 2));
 
     // Add Y values from each visible series (on its own axis)
@@ -869,10 +899,10 @@ void XYChartWidget::drawCrosshair(QPainter &painter)
 
         int axisId = series.yAxisId;
         // Convert Y to data coordinate using axis-specific range
-        QPointF dataPoint = mapToData(QPointF(m_crosshairPos.x(), m_crosshairPos.y()), axisId);
+        QPointF seriesDataPoint = mapToData(QPointF(m_crosshairPos.x(), m_crosshairPos.y()), axisId);
 
         // Only show the Y value for this axis
-        QString yText = QString("%1: %2").arg(series.name).arg(dataPoint.y(), 0, 'f', 2);
+        QString yText = QString("%1: %2").arg(series.name).arg(seriesDataPoint.y(), 0, 'f', 2);
         lines.append(yText);
     }
 

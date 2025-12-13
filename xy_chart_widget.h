@@ -94,6 +94,10 @@ public:
     void setCrosshairVisible(bool visible);
     bool isCrosshairVisible() const;
 
+    // Dark mode support
+    void setDarkModeEnabled(bool enabled);
+    bool isDarkModeEnabled() const;
+
     // Multi-axis support
     void setMultiAxisEnabled(bool enabled);
     bool isMultiAxisEnabled() const;
@@ -174,6 +178,9 @@ private:
     // Crosshair
     bool m_crosshairVisible;
     QPoint m_crosshairPos;
+
+    // Dark mode
+    bool m_darkModeEnabled;
 };
 
 #endif // XY_CHART_WIDGET_H

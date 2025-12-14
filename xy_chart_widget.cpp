@@ -633,7 +633,7 @@ void XYChartWidget::drawYAxis(QPainter &painter, const YAxisInfo &axis)
     // Calculate position for this axis based on which side and order
     int xPos = m_leftMargin;
     int axisWidth = 50;  // Width allocated for each axis label column
-    int minEdgePadding = 10;  // Minimum space from window edge
+    int minEdgePadding = 30;  // Minimum space from window edge to prevent text cutoff
 
     if (axis.side == Qt::AlignRight) {
         // Right side axes - stack them from left to right
@@ -643,9 +643,10 @@ void XYChartWidget::drawYAxis(QPainter &painter, const YAxisInfo &axis)
             if (it.value().side == Qt::AlignRight) rightCount++;
         }
         xPos = width() - m_rightMargin + rightCount * axisWidth;
-        // Ensure axis doesn't go beyond right edge of window
-        if (xPos + axisWidth > width() - minEdgePadding) {
-            xPos = width() - minEdgePadding - axisWidth;
+        // Ensure axis and its labels don't go beyond right edge of window
+        int maxXPos = width() - minEdgePadding;
+        if (xPos + 50 > maxXPos) {  // 50 is text width for right side
+            xPos = maxXPos - 50;
         }
     } else {
         // Left side axes - stack them from right to left
@@ -655,9 +656,10 @@ void XYChartWidget::drawYAxis(QPainter &painter, const YAxisInfo &axis)
             if (it.value().side == Qt::AlignLeft) leftCount++;
         }
         xPos = m_leftMargin - (leftCount + 1) * axisWidth;
-        // Ensure axis doesn't go beyond left edge of window
-        if (xPos < minEdgePadding) {
-            xPos = minEdgePadding;
+        // Ensure axis and its labels don't go beyond left edge of window
+        int minXPos = minEdgePadding + axisWidth;
+        if (xPos < minXPos) {
+            xPos = minXPos;
         }
     }
 
@@ -1045,8 +1047,10 @@ void XYChartWidget::updateMargins()
     int leftCount = countAxesOnSide(Qt::AlignLeft);
     int rightCount = countAxesOnSide(Qt::AlignRight);
 
-    m_leftMargin = 60 + qMax(0, leftCount - 1) * m_axisSpacing;
-    m_rightMargin = 20 + rightCount * m_axisSpacing;
+    // Increase margins to ensure axis labels aren't cut off
+    // Base margins provide space for single axis, then add spacing for each additional axis
+    m_leftMargin = 80 + qMax(0, leftCount - 1) * m_axisSpacing;
+    m_rightMargin = 50 + rightCount * m_axisSpacing;
 }
 
 QColor XYChartWidget::getNextColor()

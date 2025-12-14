@@ -632,7 +632,8 @@ void XYChartWidget::drawYAxis(QPainter &painter, const YAxisInfo &axis)
 {
     // Calculate position for this axis based on which side and order
     int xPos = m_leftMargin;
-    int axisSpacing = 70;  // Space between axes for proper separation (increased from m_axisSpacing)
+    int axisSpacing = 70;  // Space between axes for proper separation
+    int axisWidth = 60;    // Width allocated for axis label text
     int minEdgePadding = 30;  // Minimum space from window edge to prevent text cutoff
 
     if (axis.side == Qt::AlignRight) {

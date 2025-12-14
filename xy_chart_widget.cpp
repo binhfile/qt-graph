@@ -633,10 +633,20 @@ void XYChartWidget::drawYAxis(QPainter &painter, const YAxisInfo &axis)
     // Calculate position for this axis based on which side and order
     int xPos = m_leftMargin;
     int axisWidth = 50;  // Width allocated for each axis label column
+    int minEdgePadding = 10;  // Minimum space from window edge
 
     if (axis.side == Qt::AlignRight) {
-        // Right side axes
-        xPos = width() - m_rightMargin;
+        // Right side axes - stack them from left to right
+        int rightCount = 0;
+        for (auto it = m_yAxes.begin(); it != m_yAxes.end(); ++it) {
+            if (it.value().axisId == axis.axisId) break;
+            if (it.value().side == Qt::AlignRight) rightCount++;
+        }
+        xPos = width() - m_rightMargin + rightCount * axisWidth;
+        // Ensure axis doesn't go beyond right edge of window
+        if (xPos + axisWidth > width() - minEdgePadding) {
+            xPos = width() - minEdgePadding - axisWidth;
+        }
     } else {
         // Left side axes - stack them from right to left
         int leftCount = 0;
@@ -645,6 +655,10 @@ void XYChartWidget::drawYAxis(QPainter &painter, const YAxisInfo &axis)
             if (it.value().side == Qt::AlignLeft) leftCount++;
         }
         xPos = m_leftMargin - (leftCount + 1) * axisWidth;
+        // Ensure axis doesn't go beyond left edge of window
+        if (xPos < minEdgePadding) {
+            xPos = minEdgePadding;
+        }
     }
 
     // Draw axis line

@@ -632,7 +632,7 @@ void XYChartWidget::drawYAxis(QPainter &painter, const YAxisInfo &axis)
 {
     // Calculate position for this axis based on which side and order
     int xPos = m_leftMargin;
-    int axisSpacing = 70;  // Space between axes for proper separation
+    int axisSpacing = 100;  // Space between axes for proper separation (increased to prevent overlap)
     int axisWidth = 60;    // Width allocated for axis label text
     int minEdgePadding = 30;  // Minimum space from window edge to prevent text cutoff
 
@@ -1050,8 +1050,8 @@ void XYChartWidget::updateMargins()
 
     // Increase margins to ensure axis labels aren't cut off
     // Base margins provide space for single axis, then add spacing for each additional axis
-    // Using increased spacing (70px) to prevent axes from overlapping
-    int axisSpacing = 70;
+    // Using increased spacing (100px) to prevent axes from overlapping
+    int axisSpacing = 100;
     m_leftMargin = 100 + qMax(0, leftCount - 1) * axisSpacing;
     m_rightMargin = 80 + rightCount * axisSpacing;
 }

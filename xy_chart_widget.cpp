@@ -632,7 +632,7 @@ void XYChartWidget::drawYAxis(QPainter &painter, const YAxisInfo &axis)
 {
     // Calculate position for this axis based on which side and order
     int xPos = m_leftMargin;
-    int axisWidth = 50;  // Width allocated for each axis label column
+    int axisSpacing = 70;  // Space between axes for proper separation (increased from m_axisSpacing)
     int minEdgePadding = 30;  // Minimum space from window edge to prevent text cutoff
 
     if (axis.side == Qt::AlignRight) {
@@ -642,7 +642,7 @@ void XYChartWidget::drawYAxis(QPainter &painter, const YAxisInfo &axis)
             if (it.value().axisId == axis.axisId) break;
             if (it.value().side == Qt::AlignRight) rightCount++;
         }
-        xPos = width() - m_rightMargin + rightCount * axisWidth;
+        xPos = width() - m_rightMargin + rightCount * axisSpacing;
         // Ensure axis and its labels don't go beyond right edge of window
         int maxXPos = width() - minEdgePadding;
         if (xPos + 50 > maxXPos) {  // 50 is text width for right side
@@ -655,9 +655,9 @@ void XYChartWidget::drawYAxis(QPainter &painter, const YAxisInfo &axis)
             if (it.value().axisId == axis.axisId) break;
             if (it.value().side == Qt::AlignLeft) leftCount++;
         }
-        xPos = m_leftMargin - (leftCount + 1) * axisWidth;
+        xPos = m_leftMargin - (leftCount + 1) * axisSpacing;
         // Ensure axis and its labels don't go beyond left edge of window
-        int minXPos = minEdgePadding + axisWidth;
+        int minXPos = minEdgePadding + axisSpacing;
         if (xPos < minXPos) {
             xPos = minXPos;
         }
@@ -1049,8 +1049,10 @@ void XYChartWidget::updateMargins()
 
     // Increase margins to ensure axis labels aren't cut off
     // Base margins provide space for single axis, then add spacing for each additional axis
-    m_leftMargin = 80 + qMax(0, leftCount - 1) * m_axisSpacing;
-    m_rightMargin = 50 + rightCount * m_axisSpacing;
+    // Using increased spacing (70px) to prevent axes from overlapping
+    int axisSpacing = 70;
+    m_leftMargin = 100 + qMax(0, leftCount - 1) * axisSpacing;
+    m_rightMargin = 80 + rightCount * axisSpacing;
 }
 
 QColor XYChartWidget::getNextColor()

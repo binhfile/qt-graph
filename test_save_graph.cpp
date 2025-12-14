@@ -30,6 +30,7 @@ public:
         m_chartWidget->setTitle("Test Graph - Multi-Axis Sine Waves");
         m_chartWidget->setXLabel("Time (s)");
         m_chartWidget->setYLabel("Value");
+        m_chartWidget->setDarkModeEnabled(false);
 
         // Enable multi-axis mode
         m_chartWidget->setMultiAxisEnabled(true);
